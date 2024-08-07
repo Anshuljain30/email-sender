@@ -33,3 +33,9 @@ lerna-debug.log*
 !.vscode/tasks.json
 !.vscode/launch.json
 !.vscode/extensions.json
+
+# Personal
+.pdf
+.xlsx
+credentials.json
+src/app.constants.ts
