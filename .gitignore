@@ -38,4 +38,4 @@ lerna-debug.log*
 .pdf
 .xlsx
 credentials.json
-src/app.constants.ts
+*.constants.ts
