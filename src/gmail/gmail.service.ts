@@ -15,6 +15,7 @@ export class GmailService {
 
   async sendMail(
     to: string,
+    recipientName: string,
     subject: string,
     text: string,
     attachmentPath: string,
@@ -34,7 +35,7 @@ export class GmailService {
       `--${boundary}`,
       `Content-Type: text/plain; charset="UTF-8"`,
       '',
-      text,
+      text.replace('Receiver', recipientName),
       '',
       `--${boundary}`,
       `Content-Type: ${mime.lookup(attachmentPath)}; name="${attachmentPath
