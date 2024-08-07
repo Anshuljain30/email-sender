@@ -7,7 +7,7 @@ export class GoogleAuthService {
 
   constructor() {
     const { client_id, client_secret, redirect_uris } =
-      require('./credentials.json').installed;
+      require('../../credentials.json').web;
 
     this.oauth2Client = new google.auth.OAuth2(
       client_id,
