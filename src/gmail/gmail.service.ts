@@ -1,6 +1,9 @@
 import { Injectable } from '@nestjs/common';
 import { google } from 'googleapis';
 import { GoogleAuthService } from '../google-auth/google-auth.service';
+import { readFileSync } from 'fs';
+import { Buffer } from 'buffer';
+import * as mime from 'mime-types';
 
 @Injectable()
 export class GmailService {
@@ -20,12 +23,15 @@ export class GmailService {
     text: string,
     attachmentPath: string,
   ) {
-    const { createReadStream } = require('fs');
-    const { google } = require('googleapis');
-    const mime = require('mime-types');
-    const base64url = require('base64-url');
+    const boundary = '---boundary123'; // A more descriptive boundary
+    const attachmentName = attachmentPath.split('/').pop();
+    const attachmentMimeType =
+      mime.lookup(attachmentPath) || 'application/octet-stream';
 
-    const boundary = '---';
+    // Read file synchronously
+    const attachmentData = readFileSync(attachmentPath);
+    const attachmentBase64 = Buffer.from(attachmentData).toString('base64');
+
     const messageParts = [
       `From: your-email@gmail.com`,
       `To: ${to}`,
@@ -38,24 +44,28 @@ export class GmailService {
       text.replace('Receiver', recipientName),
       '',
       `--${boundary}`,
-      `Content-Type: ${mime.lookup(attachmentPath)}; name="${attachmentPath
-        .split('/')
-        .pop()}"`,
-      `Content-Disposition: attachment; filename="${attachmentPath
-        .split('/')
-        .pop()}"`,
+      `Content-Type: ${attachmentMimeType}; name="${attachmentName}"`,
+      `Content-Disposition: attachment; filename="${attachmentName}"`,
       `Content-Transfer-Encoding: base64`,
       '',
-      base64url.encode(createReadStream(attachmentPath).toString('base64')),
+      attachmentBase64,
+      '',
       `--${boundary}--`,
     ];
 
     const rawMessage = messageParts.join('\n');
 
+    // Encode raw message
+    const encodedMessage = Buffer.from(rawMessage)
+      .toString('base64')
+      .replace(/\+/g, '-')
+      .replace(/\//g, '_')
+      .replace(/=+$/, '');
+
     const res = await this.gmail.users.messages.send({
       userId: 'me',
       requestBody: {
-        raw: base64url.encode(rawMessage),
+        raw: encodedMessage,
       },
     });
 
