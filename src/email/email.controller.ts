@@ -16,7 +16,6 @@ export class EmailController {
   @Get('/send')
   async sendEmails(@Res() res: Response) {
     const url = await this.googleAuthService.getAuthUrl();
-    console.log(url);
     res.redirect(url);
   }
 
